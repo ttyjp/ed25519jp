@@ -1,0 +1,7 @@
+FROM alpine:3.10
+
+RUN apk -U upgrade \
+  && apk add bind bind-tools bind-dnssec-tools \
+  && rm -rf /var/cache/apk/*
+
+CMD ["sh"]

@@ -1,0 +1,8 @@
+FROM alpine:3.10
+
+RUN apk -U upgrade \
+  && apk add nginx certbot drill ldns-tools bind-tools openssl \
+  && rm -rf /var/cache/apk/* \
+  && mkdir /run/nginx
+
+CMD ["sh"]

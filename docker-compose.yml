@@ -1,0 +1,93 @@
+version: "3.7"
+services:
+  ns0:
+    build:
+      context: .
+      dockerfile: ./Dockerfile/named-dockerfile
+    volumes:
+      - ./bin/named-run.sh:/usr/local/bin/named-run.sh:ro
+      - ./conf/named.conf:/etc/bind/named.conf:ro
+      - ./named:/var/named
+      - log:/var/log
+      - socket:/var/run/nsd
+      - zones:/etc/nsd/secondary
+      - db:/var/db/nsd
+    command: named-run.sh
+    init: true
+    environment:
+      UID: ${UID:-100}
+      GID: ${GID:-101}
+    networks:
+      dns-nw:
+        ipv4_address: 10.186.63.218
+    restart: always
+
+  dnstap:
+    image: ttyjp/nsd-dnstap
+    user: ${UID:-100}:${GID:-101}
+    volumes:
+      - socket:/var/run/nsd
+      - log:/var/log
+    network_mode: "none"
+    command: fstrm_capture -t protobuf:dnstap.Dnstap -u /var/run/nsd/dnstap.sock -w /var/log/dnstap/dnstap-%F-%T.fstrm -s ${LOG_FILE_REOPEN_INTERVAL:-3600} --gmtime
+    restart: always
+
+  ns:
+    image: ttyjp/nsd-dnstap
+    volumes:
+      - ./conf/nsd.conf:/etc/nsd/nsd.conf:ro
+      - ./bin/nsd-run.sh:/usr/local/bin/nsd-run.sh:ro
+      - zones:/etc/nsd/secondary
+      - db:/var/db/nsd
+      - log:/var/log
+      - socket:/var/run/nsd
+    depends_on:
+      - dnstap
+      - ns0
+    ports:
+      - "53:53/udp"
+      - "53:53"
+    command: nsd-run.sh
+    init: true
+    environment:
+      UID: ${UID:-100}
+      GID: ${GID:-101}
+    networks:
+      dns-nw:
+        ipv4_address: 10.186.63.220
+      default:
+    restart: always
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./Dockerfile/nginx-dockerfile
+    volumes:
+      - ./bin/cert.sh:/usr/local/bin/cert.sh:ro
+      - ./conf/${NGINX_CONF}:/etc/nginx/conf.d/${NGINX_CONF}:ro
+      - ./nginx:/nginx
+      - ./bin/authenticator.sh:/usr/local/bin/authenticator.sh:ro
+      - ./bin/cleanup.sh:/usr/local/bin/cleanup.sh:ro
+      - log:/var/log
+    depends_on:
+      - ns
+    ports:
+      - "80:80"
+      - "443:443"
+    command: nginx -g "daemon off;"
+    networks:
+      - dns-nw
+      - default
+    restart: always
+
+volumes:
+  zones:
+  db:
+  socket:
+  log:
+
+networks:
+  dns-nw:
+    ipam:
+      config:
+        - subnet: 10.186.63.216/29
