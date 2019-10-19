@@ -1,0 +1,23 @@
+$ORIGIN .
+$TTL 3600	; 1 hour
+ed448.jp		IN SOA	ns.ed25519.jp. ns1micojp.gmail.com. (
+				8          ; serial
+				3600       ; refresh (1 hour)
+				300        ; retry (5 minutes)
+				1209600    ; expire (2 weeks)
+				900        ; minimum (15 minutes)
+				)
+			NS	ns.ed25519.jp.
+$TTL 300	; 5 minutes
+			A	160.16.200.128
+$TTL 3600	; 1 hour
+			CAA	0 iodef "mailto:ns1micojp@gmail.com"
+			CAA	0 issue "letsencrypt.org"
+$ORIGIN ed448.jp.
+$TTL 300	; 5 minutes
+_443._tcp		TLSA	3 1 1 (
+				A77B234DCB7289B1048E39D67D1CD374FCB99915282B
+				6196A7C75CCA88402494 )
+_443._tcp.www		TLSA	3 1 1 (
+				A77B234DCB7289B1048E39D67D1CD374FCB99915282B
+				6196A7C75CCA88402494 )

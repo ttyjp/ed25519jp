@@ -60,7 +60,7 @@ if [ -e "${CERT_LINK}" ]; then
   if [ 100 -gt ${DAYS_ELAPSED} ] && [ 300 -lt ${DAYS_ELAPSED} ] || [ 8900 -gt ${DAYS_ELAPSED} ]; then
     EXPIRE_DATE="$(openssl x509 -text -fingerprint -noout -in ${CERT_LINK} | sed -n "s/^ \{12\}Not After : \(.*\)/\1/p")"
 
-    echo "SKIPPED: ${DOMAIN_NAME} EXPIRE: ${EXPIRE_DATE}"
+    echo "SKIPPED: ${DOMAIN_NAME} EXPIRE: ${EXPIRE_DATE}" \
     && exit 0
   fi
 fi
