@@ -55,9 +55,9 @@ fi
 
 if [ -e "${CERT_LINK}" ]; then
   NOT_BEFORE="$(openssl x509 -text -fingerprint -noout -in ${CERT_LINK} | grep "Not Before" | awk '{print $3,$4,$5,$6}')"
-  DAYS_ELAPSED="$(expr $(date +%Y%m%d) - $(date +%Y%m%d -d "${NOT_BEFORE}"))"
+  ELAPSED_SECONDS="$(expr $(date +%s) - $(date +%s -d "${NOT_BEFORE}"))"
 
-  if [ 100 -gt ${DAYS_ELAPSED} ] && [ 300 -lt ${DAYS_ELAPSED} ] || [ 8900 -gt ${DAYS_ELAPSED} ]; then
+  if [ 5184000 -gt ${ELAPSED_SECONDS} ]; then
     EXPIRE_DATE="$(openssl x509 -text -fingerprint -noout -in ${CERT_LINK} | sed -n "s/^ \{12\}Not After : \(.*\)/\1/p")"
 
     echo "SKIPPED: ${DOMAIN_NAME} EXPIRE: ${EXPIRE_DATE}" \
