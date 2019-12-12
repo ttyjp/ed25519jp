@@ -23,7 +23,7 @@ services:
     restart: always
 
   dnstap:
-    image: ttyjp/nsd-dnstap
+    image: ttyjp/nsd-dnstap:4.2.4
     user: ${UID:-100}:${GID:-101}
     volumes:
       - socket:/var/run/nsd
@@ -33,7 +33,7 @@ services:
     restart: always
 
   ns:
-    image: ttyjp/nsd-dnstap
+    image: ttyjp/nsd-dnstap:4.2.4
     volumes:
       - ./conf/nsd.conf:/etc/nsd/nsd.conf:ro
       - ./bin/nsd-run.sh:/usr/local/bin/nsd-run.sh:ro
