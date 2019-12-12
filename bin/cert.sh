@@ -90,21 +90,6 @@ if [ -e ${FULLCHAIN_CERT} ]; then
   cd ${DIR} \
   && ln -s $(basename ${FULLCHAIN_CERT}) $(basename ${CERT_LINK})
 
-  ## TLSA recorde update and NGINX reload.
-  TLSA_RECORDE="$(ldns-dane -c ${CERT_LINK} create ${DOMAIN_NAME} 443 3 1 1 | awk '{print $1, 300 ,$3,$4,$5,$6,$7,$8}')"
-  WWW_TLSA_RECORDE="$(ldns-dane -c ${CERT_LINK} create www.${DOMAIN_NAME} 443 3 1 1 | awk '{print $1, 300 ,$3,$4,$5,$6,$7,$8}')"
-
-  echo "server $(dig +short ns0)
-    update add ${TLSA_RECORDE}
-    update add ${WWW_TLSA_RECORDE}
-  " | nsupdate -v -k /nginx/tsig.key
-
-  sleep 300 && nginx -t && nginx -s reload
-
-  echo "server $(dig +short ns0)
-    update del _443._tcp.${DOMAIN_NAME}. TLSA
-    update del _443._tcp.www.${DOMAIN_NAME}. TLSA
-    update add ${TLSA_RECORDE}
-    update add ${WWW_TLSA_RECORDE}
-  " | nsupdate -v -k /nginx/tsig.key
+  ## NGINX reload.
+  nginx -t && nginx -s reload
 fi
